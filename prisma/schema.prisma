@@ -1,0 +1,69 @@
+// CTAD Protocol - Creation-Time Authorship Declaration
+//
+// This schema implements append-only authorship declarations.
+// Declarations record claims, not verification.
+// Revisions are append-only - original declarations are never overwritten.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Work: The creative artifact being declared
+// A Work can have exactly one Declaration, but multiple Revisions
+model Work {
+  id          String       @id @default(cuid())
+  title       String
+  createdAt   DateTime     @default(now())
+  declaration Declaration?
+}
+
+// Declaration: The original creation-time authorship claim
+// This is immutable - changes are tracked via DeclarationRevision
+model Declaration {
+  id           String                @id @default(cuid())
+  workId       String                @unique
+  createdAt    DateTime              @default(now())
+
+  // REQUIRED: Statement of creative intent
+  // What was the creator trying to achieve?
+  intent       String                @db.Text
+
+  // REQUIRED: Tools used in creation
+  // List of software, hardware, instruments, AI systems, etc.
+  tools        String                @db.Text
+
+  // Was AI used in any part of the creation process?
+  aiUsed       Boolean               @default(false)
+
+  // Optional: Other contributors to the work
+  contributors String?               @db.Text
+
+  work         Work                  @relation(fields: [workId], references: [id], onDelete: Cascade)
+  revisions    DeclarationRevision[]
+}
+
+// DeclarationRevision: Append-only amendments to a declaration
+// Each revision captures a point-in-time update without overwriting history
+model DeclarationRevision {
+  id            String      @id @default(cuid())
+  declarationId String
+  createdAt     DateTime    @default(now())
+
+  // REQUIRED: Why is this revision being made?
+  changeNote    String      @db.Text
+
+  // Updated fields (all optional - only include what changed)
+  intent        String?     @db.Text
+  tools         String?     @db.Text
+  aiUsed        Boolean?
+  contributors  String?     @db.Text
+
+  declaration   Declaration @relation(fields: [declarationId], references: [id], onDelete: Cascade)
+
+  @@index([declarationId])
+}
