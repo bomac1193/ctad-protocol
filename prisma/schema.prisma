@@ -45,6 +45,32 @@ model Declaration {
 
   work         Work                  @relation(fields: [workId], references: [id], onDelete: Cascade)
   revisions    DeclarationRevision[]
+  audioRefs    AudioReference[]
+}
+
+// AudioReference: Hash-based reference to audio files
+// We store the SHA-256 hash of the audio file, NOT the file itself.
+// This provides a cryptographic link between declaration and audio
+// without embedding metadata into the audio file.
+model AudioReference {
+  id            String      @id @default(cuid())
+  declarationId String
+  createdAt     DateTime    @default(now())
+
+  // Original filename for display purposes
+  fileName      String
+
+  // SHA-256 hash of the audio file contents
+  // This is the cryptographic fingerprint linking declaration to audio
+  sha256        String
+
+  // Optional description of this audio reference
+  description   String?     @db.Text
+
+  declaration   Declaration @relation(fields: [declarationId], references: [id], onDelete: Cascade)
+
+  @@index([declarationId])
+  @@index([sha256])
 }
 
 // DeclarationRevision: Append-only amendments to a declaration

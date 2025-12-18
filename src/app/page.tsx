@@ -18,7 +18,7 @@ export default function Home() {
         Declarations are append-only and model-agnostic.
       </p>
 
-      <nav>
+      <nav style={{ display: 'flex', gap: '1rem' }}>
         <Link
           href="/new"
           style={{
@@ -31,6 +31,20 @@ export default function Home() {
           }}
         >
           Create New Declaration
+        </Link>
+        <Link
+          href="/library"
+          style={{
+            display: 'inline-block',
+            padding: '0.75rem 1.5rem',
+            backgroundColor: '#fff',
+            color: '#000',
+            textDecoration: 'none',
+            fontWeight: 'bold',
+            border: '1px solid #000',
+          }}
+        >
+          View Library
         </Link>
       </nav>
     </main>

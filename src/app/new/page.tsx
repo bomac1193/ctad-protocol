@@ -93,7 +93,7 @@ export default function NewWorkPage() {
         </div>
 
         {/* Contributors */}
-        <div style={{ marginBottom: '2rem' }}>
+        <div style={{ marginBottom: '1.5rem' }}>
           <label htmlFor="contributors" style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>
             Contributors
           </label>
@@ -104,6 +104,30 @@ export default function NewWorkPage() {
             type="text"
             id="contributors"
             name="contributors"
+            style={{
+              width: '100%',
+              padding: '0.5rem',
+              border: '1px solid #ccc',
+              fontSize: '1rem',
+            }}
+          />
+        </div>
+
+        {/* Audio Files */}
+        <div style={{ marginBottom: '2rem' }}>
+          <label htmlFor="audioFiles" style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+            Audio Files
+          </label>
+          <p style={{ color: '#666', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+            Optional: Upload audio files to create SHA-256 hash references.
+            The files are NOT stored - only their cryptographic hashes.
+          </p>
+          <input
+            type="file"
+            id="audioFiles"
+            name="audioFiles"
+            accept="audio/*"
+            multiple
             style={{
               width: '100%',
               padding: '0.5rem',

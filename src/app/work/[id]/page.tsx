@@ -24,9 +24,12 @@ export default async function WorkPage({ params }: PageProps) {
   return (
     <main style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }}>
       {/* Navigation */}
-      <nav style={{ marginBottom: '2rem' }}>
+      <nav style={{ marginBottom: '2rem', display: 'flex', gap: '1rem' }}>
         <Link href="/" style={{ color: '#666' }}>
           &larr; Home
+        </Link>
+        <Link href="/library" style={{ color: '#666' }}>
+          Library
         </Link>
       </nav>
 
@@ -68,6 +71,43 @@ export default async function WorkPage({ params }: PageProps) {
               </>
             )}
           </dl>
+        </section>
+      )}
+
+      {/* Audio References */}
+      {declaration && declaration.audioRefs && declaration.audioRefs.length > 0 && (
+        <section style={{ marginBottom: '3rem' }}>
+          <h2 style={{ marginBottom: '1rem', borderBottom: '1px solid #eee', paddingBottom: '0.5rem' }}>
+            Audio References ({declaration.audioRefs.length})
+          </h2>
+          <p style={{ color: '#666', fontSize: '0.875rem', marginBottom: '1rem' }}>
+            SHA-256 hashes of audio files associated with this declaration.
+          </p>
+
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {declaration.audioRefs.map((audioRef) => (
+              <li
+                key={audioRef.id}
+                style={{
+                  marginBottom: '1rem',
+                  padding: '1rem',
+                  backgroundColor: '#f5f5f5',
+                  border: '1px solid #eee',
+                  fontFamily: 'monospace',
+                }}
+              >
+                <p style={{ margin: 0, marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                  {audioRef.fileName}
+                </p>
+                <p style={{ margin: 0, fontSize: '0.75rem', wordBreak: 'break-all' }}>
+                  SHA-256: {audioRef.sha256}
+                </p>
+                <p style={{ margin: 0, marginTop: '0.5rem', color: '#666', fontSize: '0.75rem' }}>
+                  Added: {audioRef.createdAt.toISOString()}
+                </p>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 
