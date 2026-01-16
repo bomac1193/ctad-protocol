@@ -46,6 +46,7 @@ model Declaration {
   work         Work                  @relation(fields: [workId], references: [id], onDelete: Cascade)
   revisions    DeclarationRevision[]
   audioRefs    AudioReference[]
+  processDeclaration ProcessDeclaration? // Optional link to process capture data
 }
 
 // AudioReference: Hash-based reference to audio files
@@ -92,4 +93,107 @@ model DeclarationRevision {
   declaration   Declaration @relation(fields: [declarationId], references: [id], onDelete: Cascade)
 
   @@index([declarationId])
+}
+
+// ============================================================================
+// PROCESS CAPTURE - Refyn Integration for RLHF Training Data
+// ============================================================================
+
+// AIPlatform: Supported AI generation platforms
+enum AIPlatform {
+  MIDJOURNEY
+  SUNO
+  UDIO
+  RUNWAY
+  PIKA
+  DALLE
+  FLUX
+  LEONARDO
+  STABLE_DIFFUSION
+  HIGGSFIELD
+  CHATGPT
+  CLAUDE
+  UNKNOWN
+}
+
+// ContributorTier: Reward tier levels based on contribution points
+enum ContributorTier {
+  EXPLORER    // 0-99 points
+  CURATOR     // 100-499 points
+  TASTEMAKER  // 500-1999 points
+  ORACLE      // 2000+ points
+}
+
+// ProcessDeclaration: Captures the creative process behind a work
+// Records prompt iterations, rejections, and final selections
+// This data is valuable for RLHF training
+model ProcessDeclaration {
+  id                String       @id @default(cuid())
+  declarationId     String?      @unique // Optional link to final Declaration
+  createdAt         DateTime     @default(now())
+
+  // Platform and session info
+  platform          AIPlatform
+  sessionStartedAt  DateTime
+  sessionEndedAt    DateTime?
+  sessionDuration   Int?         // Duration in seconds
+  iterationCount    Int          @default(0)
+
+  // Process data stored as JSON for flexibility
+  // PromptVersion[]: { id, content, timestamp, parentId, mode, platform, metadata }
+  promptLineage     Json
+
+  // RejectedOutput[]: { id, promptVersionId, timestamp, reason, customFeedback }
+  rejectedOutputs   Json
+
+  // SelectedOutput: { id, promptVersionId, timestamp, likeReason, customFeedback }
+  selectedOutput    Json?
+
+  // Consent fields - required for data usage compliance
+  consentForTrainingData  Boolean   @default(false)
+  consentTimestamp        DateTime?
+  consentVersion          String?   // e.g., "1.0" - tracks consent UI version
+
+  // Contributor info (anonymous)
+  contributorId           String?   // Anonymous hash identifier
+  contributorTasteScore   Float?    // Calculated from selection alignment (0-1)
+  contributorExpertiseTags String[] // e.g., ["electronic", "cinematic"]
+
+  // Optional relation to Declaration (if final work was declared)
+  declaration       Declaration? @relation(fields: [declarationId], references: [id])
+
+  @@index([contributorId])
+  @@index([platform])
+  @@index([createdAt])
+  @@index([consentForTrainingData])
+}
+
+// Contributor: Tracks anonymous contributor statistics and rewards
+// Used to calculate quality multipliers and manage tier progression
+model Contributor {
+  id                String          @id @default(cuid())
+  anonymousId       String          @unique // Browser fingerprint hash
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // Contribution stats
+  totalContributions Int            @default(0)
+  totalPoints        Int            @default(0)
+  currentTier        ContributorTier @default(EXPLORER)
+
+  // Quality signals
+  tasteScore         Float          @default(0.5) // 0-1, alignment with consensus
+  expertiseTags      String[]       // Accumulated expertise areas
+
+  // Platform-specific stats stored as JSON
+  // { platform: { contributions: number, accuracy: number } }
+  platformStats      Json?
+
+  // Consent tracking
+  consentVersion     String?
+  consentTimestamp   DateTime?
+
+  @@index([anonymousId])
+  @@index([currentTier])
+  @@index([tasteScore])
 }
