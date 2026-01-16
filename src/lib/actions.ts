@@ -54,7 +54,7 @@ interface CreateRevisionInput {
  * Audio files are hashed server-side and stored as AudioReferences.
  * We do NOT store the audio files themselves - only the hash and filename.
  */
-export async function createWork(formData: FormData) {
+export async function createWork(formData: FormData): Promise<void> {
   const title = formData.get('title') as string
   const intent = formData.get('intent') as string
   const tools = formData.get('tools') as string
@@ -66,13 +66,13 @@ export async function createWork(formData: FormData) {
 
   // Validate required fields
   if (!title?.trim()) {
-    return { error: 'Work title is required' }
+    throw new Error('Work title is required')
   }
   if (!intent?.trim()) {
-    return { error: 'Intent statement is required' }
+    throw new Error('Intent statement is required')
   }
   if (!tools?.trim()) {
-    return { error: 'Tools used is required' }
+    throw new Error('Tools used is required')
   }
 
   // Process audio files: compute SHA-256 hashes server-side
@@ -126,7 +126,7 @@ export async function createWork(formData: FormData) {
  * is never modified. Each Revision captures a point-in-time amendment
  * with a required change note explaining why the revision was made.
  */
-export async function createRevision(formData: FormData) {
+export async function createRevision(formData: FormData): Promise<void> {
   const declarationId = formData.get('declarationId') as string
   const changeNote = formData.get('changeNote') as string
   const intent = formData.get('intent') as string | null
@@ -137,10 +137,10 @@ export async function createRevision(formData: FormData) {
 
   // Validate required fields
   if (!declarationId) {
-    return { error: 'Declaration ID is required' }
+    throw new Error('Declaration ID is required')
   }
   if (!changeNote?.trim()) {
-    return { error: 'Change note is required' }
+    throw new Error('Change note is required')
   }
 
   // Verify declaration exists
@@ -149,7 +149,7 @@ export async function createRevision(formData: FormData) {
   })
 
   if (!declaration) {
-    return { error: 'Declaration not found' }
+    throw new Error('Declaration not found')
   }
 
   // Create the revision (append-only)
@@ -166,8 +166,6 @@ export async function createRevision(formData: FormData) {
 
   // Revalidate the work page to show the new revision
   revalidatePath(`/work/${declaration.workId}`)
-
-  return { success: true }
 }
 
 /**
