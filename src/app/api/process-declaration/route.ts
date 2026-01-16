@@ -8,6 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import {
   validateProcessInput,
@@ -79,9 +80,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<ProcessDe
         sessionEndedAt: input.sessionEndedAt ? new Date(input.sessionEndedAt) : null,
         sessionDuration,
         iterationCount: input.iterationCount || input.promptLineage.length,
-        promptLineage: input.promptLineage,
-        rejectedOutputs: input.rejectedOutputs,
-        selectedOutput: input.selectedOutput || null,
+        promptLineage: input.promptLineage as unknown as Prisma.InputJsonValue,
+        rejectedOutputs: input.rejectedOutputs as unknown as Prisma.InputJsonValue,
+        selectedOutput: (input.selectedOutput || null) as unknown as Prisma.InputJsonValue,
         consentForTrainingData: input.consentForTrainingData,
         consentTimestamp: input.consentTimestamp ? new Date(input.consentTimestamp) : null,
         consentVersion: input.consentVersion,
